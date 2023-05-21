@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "fractal-fields"
+version = "0.1.0"
+description = "Generate Gaussian Random Fields"
+license = "MIT"
+readme = "README.rst"
+homepage = "https://github.com/amanchokshi/fractal-fields"
+repository = "https://github.com/amanchokshi/fractal-fields"
+authors = ["Aman Chokshi <achokshi@student.unimelb.edu.au>"]
+keywords = ["fractal", "gaussian", "random", "fields", "simulations"]
+
+[tool.poetry.dependencies]
+python = "^3.8,<3.12"
+numpy = "^1.24.3"
+scipy = "^1.10.1"
+matplotlib = "^3.7.1"
+cmasher = "^1.6.3"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
