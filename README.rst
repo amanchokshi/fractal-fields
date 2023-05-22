@@ -3,6 +3,6 @@
     :align: center
     :alt: Fractal Fields Logo
 
--------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 
-Generate beautiful self repeating cloudy patterns, or more technically, n-dimensional Gaussian Random Fields (GRFs)
+Generate beautiful self repeating cloudy patterns, or more technically, n-dimensional Gaussian Random Fields
