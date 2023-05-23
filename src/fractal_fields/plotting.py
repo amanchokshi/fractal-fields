@@ -20,6 +20,25 @@ nice_fonts = {
 plt.rcParams.update(nice_fonts)
 
 
+def gaussian(x, sigma):
+    """Gaussian distribution.
+
+    Parameters
+    ----------
+    x : array
+        Input numpy array
+    sigma : int
+        Standard deviation
+
+    Returns
+    -------
+    numpy array
+        Gaussian probability distribution function
+    """
+
+    return (1.0 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-(x ** 2) / (2 * sigma ** 2))
+
+
 def add_colorbar(mappable):
     """Helper function to add colorbar to plot."""
 
@@ -44,17 +63,17 @@ if __name__ == "__main__":
     ###################################
     # PLOT A SINGLE 2D FIELD          #
     ###################################
-    # ff = FractalField(
-    #     size_exp=10,
-    #     dim=2,
-    #     pix_scale=1,
-    #     amp=1,
-    #     alpha=2,
-    #     seed=42
-    # )
-    # ff.generate_field()
-    # ff.ps()
-    #
+    ff = FractalField(
+        size_exp=10,
+        dim=2,
+        pix_scale=1,
+        amp=1,
+        alpha=2,
+        seed=42
+    )
+    ff.generate_field()
+    ff.ps()
+
     # ymin_pow = np.floor(np.log10(min(ff.pk)))
     # ymax_pow = np.ceil(np.log10(max(ff.pk)))
     # y_ticks = [10**i for i in np.arange(ymin_pow, ymax_pow + 1)]
@@ -80,66 +99,90 @@ if __name__ == "__main__":
     # ax1.set_ylabel(r'y [$pixels$]')
     # add_colorbar(im)
     # plt.tight_layout()
-    # plt.savefig('imgs/GRF_2D.png')
+    # # plt.savefig('imgs/GRF_2D.png')
     # plt.show()
-
-    ###################################
-    # PLOT ENSEMBLE OF 1D PS          #
-    ###################################
-
-    seeds = np.arange(256)
-
-    kvals = []
-    pks = []
-    for seed in seeds:
-        ff = FractalField(
-            size_exp=10,
-            dim=2,
-            pix_scale=1,
-            amp=1,
-            alpha=0,
-            seed=seed
-        )
-        ff.generate_field()
-        ff.ps()
-
-        kvals.append(ff.kvals)
-        pks.append(ff.pk)
-
-    kvals = np.asarray(kvals[0])
-    pks = np.asarray(pks)
-    pks_mean = np.mean(pks, axis=0)
-
-    # ymin_pow = np.floor(np.log10(min(pks_mean)))
-    # ymax_pow = np.ceil(np.log10(max(pks_mean)))
-    # y_ticks = [10**i for i in np.arange(ymin_pow, ymax_pow + 1)]
 
     fig, ax = plt.subplots(1, 1, figsize=(7, 7))
 
-    title_str = fr"""1D PS of GRF Realization:
+    ax.hist(ff.x_field.real.flatten(), density=True, bins=64,
+            range=(-0.025, 0.025), color="#DA3752", ec="k", lw=0.4, label='Histogram of GRF')
+    xvals = np.linspace(-0.025, 0.025, 256)
+    ax.plot(xvals, gaussian(xvals, np.std(ff.x_field.real)),
+            color="seagreen", lw=2.8, label=rf'$X \sim \mathcal{{N}}(0, {{{np.var(ff.x_field.real):.5f}}}^2)$')
+
+    title_str = fr"""Probability Density Function of GRF Realization:
             $P(k)={{{ff.amp}}} \times k^{{{-1*ff.alpha}}}$"""
 
     ax.set_title(title_str)
-    ax.loglog(kvals, pks_mean, color="#DA3752",
-              label='Average 1D PS', zorder=777, lw=2)
-    ax.loglog(ff.kvals, ff.amp*np.power(ff.kvals, -1*ff.alpha, dtype='float'),
-              color="#3287BC", label='Fiducial 1D PS', zorder=666, lw=2)
-    for i in seeds:
-        ax.loglog(kvals, pks[i], color='k', alpha=0.3, lw=0.3)
-    ax.set_xlabel('$k [pixel~{-1}]$')
-    # ax.set_yticks(y_ticks)
-    ax.set_yticks([1/2, 1, 2])
-    ax.set_ylim(1/2, 2)
-    ax.set_ylabel('$p(k)$')
 
+    ax.set_xlabel(r'$x$')
+    ax.set_ylabel(r'Probability Density')
     leg = ax.legend(loc="upper right", frameon=True,
                     markerscale=4, handlelength=1)
     leg.get_frame().set_facecolor("white")
     for le in leg.legend_handles:
         le.set_alpha(1)
     plt.tight_layout()
-    plt.savefig('imgs/GRF_PS_1D.png')
+    plt.savefig('PDF_GRF_2D.png')
     plt.show()
+
+    ###################################
+    # PLOT ENSEMBLE OF 1D PS          #
+    ###################################
+
+    # seeds = np.arange(256)
+    #
+    # kvals = []
+    # pks = []
+    # for seed in seeds:
+    #     ff = FractalField(
+    #         size_exp=10,
+    #         dim=2,
+    #         pix_scale=1,
+    #         amp=1,
+    #         alpha=0,
+    #         seed=seed
+    #     )
+    #     ff.generate_field()
+    #     ff.ps()
+    #
+    #     kvals.append(ff.kvals)
+    #     pks.append(ff.pk)
+    #
+    # kvals = np.asarray(kvals[0])
+    # pks = np.asarray(pks)
+    # pks_mean = np.mean(pks, axis=0)
+    #
+    # # ymin_pow = np.floor(np.log10(min(pks_mean)))
+    # # ymax_pow = np.ceil(np.log10(max(pks_mean)))
+    # # y_ticks = [10**i for i in np.arange(ymin_pow, ymax_pow + 1)]
+    #
+    # fig, ax = plt.subplots(1, 1, figsize=(7, 7))
+    #
+    # title_str = fr"""1D PS of GRF Realization:
+    #         $P(k)={{{ff.amp}}} \times k^{{{-1*ff.alpha}}}$"""
+    #
+    # ax.set_title(title_str)
+    # ax.loglog(kvals, pks_mean, color="#DA3752",
+    #           label='Average 1D PS', zorder=777, lw=2)
+    # ax.loglog(ff.kvals, ff.amp*np.power(ff.kvals, -1*ff.alpha, dtype='float'),
+    #           color="#3287BC", label='Fiducial 1D PS', zorder=666, lw=2)
+    # for i in seeds:
+    #     ax.loglog(kvals, pks[i], color='k', alpha=0.3, lw=0.3)
+    # ax.set_xlabel('$k [pixel~{-1}]$')
+    # # ax.set_yticks(y_ticks)
+    # ax.set_yticks([1/2, 1, 2])
+    # ax.set_ylim(1/2, 2)
+    # ax.set_ylabel('$p(k)$')
+    #
+    # leg = ax.legend(loc="upper right", frameon=True,
+    #                 markerscale=4, handlelength=1)
+    # leg.get_frame().set_facecolor("white")
+    # for le in leg.legend_handles:
+    #     le.set_alpha(1)
+    # plt.tight_layout()
+    # plt.savefig('imgs/GRF_PS_1D.png')
+    # plt.show()
 
     ###################################
     # PLOT A RANGE OF SPECTRAL SLOPES #
